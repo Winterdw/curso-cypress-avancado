@@ -1,8 +1,19 @@
 describe('Hacker Stories', () => {
   beforeEach(() => {
     cy.visit('/')
+    //Um jeito de fazer
+    // cy.intercept('GET', '**/search?query=React&page=0').as('getStories')
+    //cy.contains('More').should('be.visible')
 
-    cy.assertLoadingIsShownAndHidden()
+    //Segundo  jeito de fazer
+    cy.intercept({
+      method: 'GET',
+      pathname: '**/search',
+      query: {
+        query: 'React',
+        page: '0'
+      }
+    }).as('getStories')
     cy.contains('More').should('be.visible')
   })
 
@@ -18,14 +29,23 @@ describe('Hacker Stories', () => {
     // and so, how can I assert on the data?
     // This is why this test is being skipped.
     // TODO: Find a way to test it out.
-    it.skip('shows the right data for all rendered stories', () => {})
+    it.skip('shows the right data for all rendered stories', () => { })
 
     it('shows 20 stories, then the next 20 after clicking "More"', () => {
       cy.get('.item').should('have.length', 20)
 
       cy.contains('More').click()
 
-      cy.assertLoadingIsShownAndHidden()
+      cy.intercept({
+        method: 'GET',
+        pathname: '**/search',
+        query: {
+          query: newTerm,
+          page: '1'
+        }
+      }).as('getStories')
+
+      //cy.assertLoadingIsShownAndHidden()
 
       cy.get('.item').should('have.length', 40)
     })
@@ -44,22 +64,22 @@ describe('Hacker Stories', () => {
     // This is why these tests are being skipped.
     // TODO: Find a way to test them out.
     context.skip('Order by', () => {
-      it('orders by title', () => {})
+      it('orders by title', () => { })
 
-      it('orders by author', () => {})
+      it('orders by author', () => { })
 
-      it('orders by comments', () => {})
+      it('orders by comments', () => { })
 
-      it('orders by points', () => {})
+      it('orders by points', () => { })
     })
 
     // Hrm, how would I simulate such errors?
     // Since I still don't know, the tests are being skipped.
     // TODO: Find a way to test them out.
     context.skip('Errors', () => {
-      it('shows "Something went wrong ..." in case of a server error', () => {})
+      it('shows "Something went wrong ..." in case of a server error', () => { })
 
-      it('shows "Something went wrong ..." in case of a network error', () => {})
+      it('shows "Something went wrong ..." in case of a network error', () => { })
     })
   })
 
@@ -76,7 +96,14 @@ describe('Hacker Stories', () => {
       cy.get('#search')
         .type(`${newTerm}{enter}`)
 
-      cy.assertLoadingIsShownAndHidden()
+      cy.intercept({
+        method: 'GET',
+        pathname: '**/search',
+        query: {
+          query: newTerm,
+          page: '0'
+        }
+      }).as('getStories')
 
       cy.get('.item').should('have.length', 20)
       cy.get('.item')
@@ -92,7 +119,14 @@ describe('Hacker Stories', () => {
       cy.contains('Submit')
         .click()
 
-      cy.assertLoadingIsShownAndHidden()
+      cy.intercept({
+        method: 'GET',
+        pathname: '**/search',
+        query: {
+          query: newTerm,
+          page: '0'
+        }
+      }).as('getStories')
 
       cy.get('.item').should('have.length', 20)
       cy.get('.item')
@@ -102,18 +136,40 @@ describe('Hacker Stories', () => {
         .should('be.visible')
     })
 
+    it.only('types and submits the form directly', () => {
+      cy.get('form input[type="text"]')
+        .should('be.visible')
+        .clear()
+        .type('cypress')
+      cy.get('form').submit()
+    })
+
     context('Last searches', () => {
       it('searches via the last searched term', () => {
         cy.get('#search')
           .type(`${newTerm}{enter}`)
 
-        cy.assertLoadingIsShownAndHidden()
+        cy.intercept({
+          method: 'GET',
+          pathname: '**/search',
+          query: {
+            query: newTerm,
+            page: '0'
+          }
+        }).as('getStories')
 
         cy.get(`button:contains(${initialTerm})`)
           .should('be.visible')
           .click()
 
-        cy.assertLoadingIsShownAndHidden()
+        cy.intercept({
+          method: 'GET',
+          pathname: '**/search',
+          query: {
+            query: newTerm,
+            page: '0'
+          }
+        }).as('getStories')
 
         cy.get('.item').should('have.length', 20)
         cy.get('.item')
@@ -123,7 +179,7 @@ describe('Hacker Stories', () => {
           .should('be.visible')
       })
 
-      it('shows a max of 5 buttons for the last searched terms', () => {
+      it.only('shows a max of 5 buttons for the last searched terms', () => {
         const faker = require('faker')
 
         Cypress._.times(6, () => {
@@ -132,7 +188,14 @@ describe('Hacker Stories', () => {
             .type(`${faker.random.word()}{enter}`)
         })
 
-        cy.assertLoadingIsShownAndHidden()
+        cy.intercept({
+          method: 'GET',
+          pathname: '**/search',
+          query: {
+            query: newTerm,
+            page: '0'
+          }
+        }).as('getStories')
 
         cy.get('.last-searches button')
           .should('have.length', 5)
