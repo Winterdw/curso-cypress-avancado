@@ -8,3 +8,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Cypress run
         uses: cypress-io/github-action@v6
+        with:
+          browser: chrome
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
