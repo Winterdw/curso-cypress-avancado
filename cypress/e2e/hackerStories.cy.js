@@ -136,7 +136,7 @@ describe('Hacker Stories', () => {
         .should('be.visible')
     })
 
-    it.only('types and submits the form directly', () => {
+    it('types and submits the form directly', () => {
       cy.get('form input[type="text"]')
         .should('be.visible')
         .clear()
@@ -179,7 +179,7 @@ describe('Hacker Stories', () => {
           .should('be.visible')
       })
 
-      it.only('shows a max of 5 buttons for the last searched terms', () => {
+      it('shows a max of 5 buttons for the last searched terms', () => {
         const faker = require('faker')
 
         Cypress._.times(6, () => {
