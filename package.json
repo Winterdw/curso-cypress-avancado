@@ -30,7 +30,7 @@
   ],
   "devDependencies": {
     "cypress": "^14.0.1",
-    "cypress-localstorage-commands": "^1.4.1",
+    "cypress-localstorage-commands": "^2.2.7",
     "faker": "^5.4.0",
     "standardjs": "^1.0.0-alpha"
   }
