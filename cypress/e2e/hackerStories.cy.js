@@ -42,8 +42,7 @@ describe('Hacker Stories', () => {
 
       cy.wait('@getStories')
 
-
-      //cy.assertLoadingIsShownAndHidden()
+      // cy.assertLoadingIsShownAndHidden()
 
       cy.get('.item').should('have.length', 40)
     })
@@ -100,7 +99,7 @@ describe('Hacker Stories', () => {
         }
       }).as('getStories')
       cy.get('#search')
-        .type(`${newTerm}{enter}`)      
+        .type(`${newTerm}{enter}`)
 
       cy.wait('@getStories')
 
@@ -181,13 +180,11 @@ describe('Hacker Stories', () => {
           .should('be.visible')
       })
 
-      it.only('shows a max of 5 buttons for the last searched terms', () => {
+      it('shows a max of 5 buttons for the last searched terms', () => {
         const faker = require('faker')
 
         Cypress._.times(6, () => {
-          
           cy.get('#search').clear().type(`${faker.random.word()}{enter}`)
-          
         })
 
         cy.get('.last-searches button').should('have.length', 5)
