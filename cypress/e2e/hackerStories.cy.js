@@ -1,11 +1,5 @@
 describe('Hacker Stories', () => {
   beforeEach(() => {
-    cy.visit('/')
-    //Um jeito de fazer
-    // cy.intercept('GET', '**/search?query=React&page=0').as('getStories')
-    //cy.contains('More').should('be.visible')
-
-    //Segundo  jeito de fazer
     cy.intercept({
       method: 'GET',
       pathname: '**/search',
@@ -14,6 +8,8 @@ describe('Hacker Stories', () => {
         page: '0'
       }
     }).as('getStories')
+    cy.visit('/')
+    cy.wait('@getStories')
     cy.contains('More').should('be.visible')
   })
 
@@ -33,17 +29,19 @@ describe('Hacker Stories', () => {
 
     it('shows 20 stories, then the next 20 after clicking "More"', () => {
       cy.get('.item').should('have.length', 20)
-
-      cy.contains('More').click()
-
       cy.intercept({
         method: 'GET',
         pathname: '**/search',
         query: {
-          query: newTerm,
+          query: 'React',
           page: '1'
         }
       }).as('getStories')
+
+      cy.contains('More').click()
+
+      cy.wait('@getStories')
+
 
       //cy.assertLoadingIsShownAndHidden()
 
@@ -93,9 +91,6 @@ describe('Hacker Stories', () => {
     })
 
     it('types and hits ENTER', () => {
-      cy.get('#search')
-        .type(`${newTerm}{enter}`)
-
       cy.intercept({
         method: 'GET',
         pathname: '**/search',
@@ -104,9 +99,14 @@ describe('Hacker Stories', () => {
           page: '0'
         }
       }).as('getStories')
+      cy.get('#search')
+        .type(`${newTerm}{enter}`)      
+
+      cy.wait('@getStories')
 
       cy.get('.item').should('have.length', 20)
       cy.get('.item')
+
         .first()
         .should('contain', newTerm)
       cy.get(`button:contains(${initialTerm})`)
@@ -114,11 +114,6 @@ describe('Hacker Stories', () => {
     })
 
     it('types and clicks the submit button', () => {
-      cy.get('#search')
-        .type(newTerm)
-      cy.contains('Submit')
-        .click()
-
       cy.intercept({
         method: 'GET',
         pathname: '**/search',
@@ -127,7 +122,12 @@ describe('Hacker Stories', () => {
           page: '0'
         }
       }).as('getStories')
+      cy.get('#search')
+        .type(newTerm)
+      cy.contains('Submit')
+        .click()
 
+      cy.wait('@getStories')
       cy.get('.item').should('have.length', 20)
       cy.get('.item')
         .first()
@@ -146,8 +146,18 @@ describe('Hacker Stories', () => {
 
     context('Last searches', () => {
       it('searches via the last searched term', () => {
+        cy.intercept({
+          method: 'GET',
+          pathname: '**/search',
+          query: {
+            query: newTerm,
+            page: '0'
+          }
+        }).as('getStories')
         cy.get('#search')
           .type(`${newTerm}{enter}`)
+
+        cy.wait('@getStories')
 
         cy.intercept({
           method: 'GET',
@@ -157,19 +167,11 @@ describe('Hacker Stories', () => {
             page: '0'
           }
         }).as('getStories')
-
         cy.get(`button:contains(${initialTerm})`)
           .should('be.visible')
           .click()
 
-        cy.intercept({
-          method: 'GET',
-          pathname: '**/search',
-          query: {
-            query: newTerm,
-            page: '0'
-          }
-        }).as('getStories')
+        cy.wait('@getStories')
 
         cy.get('.item').should('have.length', 20)
         cy.get('.item')
@@ -179,26 +181,16 @@ describe('Hacker Stories', () => {
           .should('be.visible')
       })
 
-      it('shows a max of 5 buttons for the last searched terms', () => {
+      it.only('shows a max of 5 buttons for the last searched terms', () => {
         const faker = require('faker')
 
         Cypress._.times(6, () => {
-          cy.get('#search')
-            .clear()
-            .type(`${faker.random.word()}{enter}`)
+          
+          cy.get('#search').clear().type(`${faker.random.word()}{enter}`)
+          
         })
 
-        cy.intercept({
-          method: 'GET',
-          pathname: '**/search',
-          query: {
-            query: newTerm,
-            page: '0'
-          }
-        }).as('getStories')
-
-        cy.get('.last-searches button')
-          .should('have.length', 5)
+        cy.get('.last-searches button').should('have.length', 5)
       })
     })
   })
